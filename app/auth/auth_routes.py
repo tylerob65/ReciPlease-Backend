@@ -19,7 +19,8 @@ def signup():
     if password != confirm_password:
         return {
             'status': 'not ok',
-            'message': 'Passwords do not match.'
+            'message': 'Passwords do not match.',
+            'severity':'error'
         }, 400
     
     # See if user exists
@@ -27,14 +28,16 @@ def signup():
     if user:
         return {
             'status': 'not ok',
-            'message': 'Please choose a different username.'
+            'message': 'Please choose a different username.',
+            'severity':'error'
         }, 400
     
     user = Users.query.filter_by(email=email).first()
     if user:
         return {
             'status': 'not ok',
-            'message': 'Please choose a different email.'
+            'message': 'Please choose a different email.',
+            'severity':'error'
         }, 400
 
     # Create a new user

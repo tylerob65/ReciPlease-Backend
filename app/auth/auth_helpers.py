@@ -18,3 +18,11 @@ def verify_token(token):
     user = Users.query.filter_by(apitoken=token).first()
     if user:
         return user
+    
+@basic_auth.error_handler
+def basic_auth_error(status):
+    return {
+        'status': 'notok',
+        'message': "Invalid Credentials",
+        'severity':"error"
+    }, 400
