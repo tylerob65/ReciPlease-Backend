@@ -22,7 +22,15 @@ def verify_token(token):
 @basic_auth.error_handler
 def basic_auth_error(status):
     return {
-        'status': 'notok',
+        'status': 'not ok',
+        'message': "Invalid Credentials",
+        'severity':"error"
+    }, 400
+
+@token_auth.error_handler
+def token_auth_error(status):
+    return {
+        'status': 'not ok',
         'message': "Invalid Credentials",
         'severity':"error"
     }, 400
