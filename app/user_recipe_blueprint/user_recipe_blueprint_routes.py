@@ -1,15 +1,29 @@
-from app.models import Users, db
+from app.models import Recipes, Users, db
 from app.auth.auth_helpers import basic_auth, token_auth
 from flask import Blueprint, request
 
 user_recipe_blueprint = Blueprint('user_recipe_blueprint',__name__)
 
-@user_recipe_blueprint.post('/createrecipe')
+@user_recipe_blueprint.post('/addrecipe')
 @token_auth.login_required
-def create_recipe():
+def add_recipe():
     data = request.json
-    
+    recipe_title = data["recipe_title"]
+    image_url = data['image_url']
+    source_url = data['source_url']
+    servings = data['servings']
+    cook_time = data['cook_time']
+    ingredients = data['ingredients']
+    instructions = data['instructions']
+    owner_id = token_auth.current_user().id
 
-    # Get data from request
-
-
+    new_recipe = Recipes(owner_id,recipe_title,instructions,ingredients,image_url,source_url,servings,cook_time)
+    new_recipe.saveToDB()
+    return {
+        'status':'ok',
+        'message':'successfully added recipe',
+        'severity':'success',
+        'data':{
+            'recipe_id':new_recipe.id,
+        },
+    }, 200
