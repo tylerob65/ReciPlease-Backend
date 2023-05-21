@@ -34,3 +34,4 @@ def test3():
     the_user = Users.query.get(1)
     user_recipes = the_user.user_recipes
     print(user_recipes)
+    print(user_recipes[0].to_dict())

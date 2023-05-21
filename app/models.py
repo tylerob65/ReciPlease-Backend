@@ -57,17 +57,22 @@ class Recipes(db.Model):
     ingredients = db.Column(ARRAY(db.String),nullable=False)
     image_url = db.Column(db.String,nullable=False)
     source_url = db.Column(db.String,nullable=False)
+
+    servings = db.Column(db.Integer)
+    cook_time = db.Column(db.Integer)
     
     owner_id = db.Column(db.Integer,db.ForeignKey(Users.id),nullable=False)
     owner = db.relationship("Users",back_populates='user_recipes',foreign_keys=[owner_id])
 
-    def __init__(self,owner_id,title,instructions,ingredients,image_url,source_url):
+    def __init__(self,owner_id,title,instructions,ingredients,image_url,source_url,servings=None,cook_time=None):
         self.owner_id = owner_id
         self.title = title
         self.instructions = instructions
         self.ingredients = ingredients
         self.image_url = image_url
         self.source_url = source_url
+        self.servings = servings
+        self.cook_time = cook_time
 
     def saveToDB(self):
         db.session.add(self)
@@ -86,6 +91,8 @@ class Recipes(db.Model):
             'ingredients':self.ingredients,
             'image_url':self.image_url,
             'source_url':self.source_url,
+            'servings':self.servings,
+            'cook_time':self.cook_time,
         }
     
 
