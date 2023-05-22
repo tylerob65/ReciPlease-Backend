@@ -29,7 +29,7 @@ def add_recipe():
     }, 200
 
 @user_recipe_blueprint.route('/viewrecipe/<int:recipe_id>')
-def get_recipe(recipe_id):
+def get_recipe_for_view(recipe_id):
     recipe = Recipes.query.get(recipe_id)
     print(recipe)
     print(recipe.to_dict())
@@ -47,6 +47,41 @@ def get_recipe(recipe_id):
         'recipeInfo':recipe.to_dict(),
     }, 200
     
+@user_recipe_blueprint.route('/editrecipe/<int:recipe_id>')
+@token_auth.login_required
+def get_recipe_for_modify(recipe_id):
+    recipe = Recipes.query.get(recipe_id)
 
+    if not recipe:
+        return {
+            "status":"not ok",
+            "message":"Recipe ID does not exist",
+            "severity":"error",
+        }, 400
+
+
+    if token_auth.current_user().id != recipe.owner_id:
+        return {
+            "status":"not ok",
+            "message":"You do not own this recipe",
+            "severity":"error",
+        }, 400
+    
+    return {
+        'status':'ok',
+        'message':'Found recipe info',
+        'severity':'success',
+        'recipeInfo':recipe.to_dict(),
+    }, 200
+    
+
+    
+    
+    
+
+
+@user_recipe_blueprint.post('/updaterecipe')
+def modify_recipe():
+    print("got to post route")
     
     
