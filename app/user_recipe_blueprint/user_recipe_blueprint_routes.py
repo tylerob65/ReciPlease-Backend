@@ -27,3 +27,26 @@ def add_recipe():
             'recipe_id':new_recipe.id,
         },
     }, 200
+
+@user_recipe_blueprint.route('/viewrecipe/<int:recipe_id>')
+def get_recipe(recipe_id):
+    recipe = Recipes.query.get(recipe_id)
+    print(recipe)
+    print(recipe.to_dict())
+
+    if not recipe:
+        return {
+            "status":"not ok",
+            "message":"Recipe ID does not exist",
+            "severity":"error",
+        }, 400
+    return {
+        'status':'ok',
+        'message':'successfully added recipe',
+        'severity':'success',
+        'recipeInfo':recipe.to_dict(),
+    }, 200
+    
+
+    
+    

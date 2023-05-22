@@ -46,7 +46,8 @@ def signup():
 
     return {
         'status': 'ok',
-        'message': "You have successfully created an account."
+        'message': "You have successfully created an account.",
+        'data':user.to_dict(),
     }, 201
 
 
