@@ -139,16 +139,23 @@ def get_all_recipes():
 
 
     
-    
-    # result = db.session.execute(db.select(Users).order_by(Users.id))
-    # all_recipes = 
-    # print(all_recipes)
-    # result_first = result.first()
-    # print(result_first)
-    # print(type(result_first))
-    # print(result_first[0])
-    # print(type(result_first[0]))
-    # print("results above")
-    # return {"hi":all_recipes}
+@user_recipe_blueprint.route('/getuserrecipes')
+@token_auth.login_required
+def get_user_recipes():
+    user_id = token_auth.current_user().id
+    user_recipes_query = db.select(Recipes).where(Recipes.owner_id==user_id).order_by(Recipes.id)
+    user_recipes = db.session.execute(user_recipes_query).all()
+    recipe_list = []
+    for recipe in user_recipes:
+        recipe_as_dict = recipe[0].shallow_to_dict(show_owner_username=True)
+        recipe_list.append(recipe_as_dict)
+    return {
+        'status':'ok',
+        'message':'Got All Recipe Info',
+        'severity':'success',
+        'data':recipe_list,
+    }, 200
+
+
 
 
