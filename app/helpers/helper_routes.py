@@ -20,6 +20,12 @@ def backup_all_route():
     
     return {"success":"success"}
 
+
+@helpers.route("/test8")
+def sql_test():
+    # Get a person's recipe likes
+    pass
+
 @helpers.route("/test7")
 def rapid_api_test():
     url = "https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/complexSearch"
@@ -31,7 +37,6 @@ def rapid_api_test():
         "X-RapidAPI-Host": RAPID_API_HOST,
     }
 
-    
     response = requests.get(url, headers=headers, params=querystring)
 
     print("This is response.headers")
@@ -69,7 +74,7 @@ def test5_check_recipelike_relationships1():
 
 @helpers.route("/test4")
 def test4_add_fake_like():
-    new_recipe_like = RecipeLikes(2,10)
+    new_recipe_like = RecipeLikes(6,1)
     new_recipe_like.saveToDB()
     print(new_recipe_like)
     return {"hi":"hi"}

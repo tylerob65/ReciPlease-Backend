@@ -148,6 +148,7 @@ def get_user_recipes():
     recipe_list = []
     for recipe in user_recipes:
         recipe_as_dict = recipe[0].shallow_to_dict(show_owner_username=True)
+        recipe_as_dict["like_count"] = len(recipe[0].recipe_likers)
         recipe_list.append(recipe_as_dict)
     return {
         'status':'ok',
