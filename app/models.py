@@ -19,6 +19,7 @@ class Users(db.Model):
     date_joined = db.Column(db.DateTime,nullable = False, default=datetime.utcnow())
 
     user_recipes = db.relationship("Recipes",foreign_keys='Recipes.owner_id',back_populates="owner")
+    liked_recipes = db.relationship("Recipes",secondary="recipe_likes",lazy=True)
     
 
     def __init__(self, username, email, password, first_name, last_name):
@@ -64,9 +65,7 @@ class Recipes(db.Model):
 
     date_added = db.Column(db.DateTime,nullable = False, default=datetime.utcnow())
 
-    # instructions = db.Column(db.String,nullable=False)
     instructions = db.Column(ARRAY(db.String),nullable=False)
-    # ingredients = db.Column(db.String,nullable=False)
     ingredients = db.Column(ARRAY(db.String),nullable=False)
     image_url = db.Column(db.String,nullable=False)
     source_url = db.Column(db.String,nullable=False)
@@ -76,6 +75,8 @@ class Recipes(db.Model):
     
     owner_id = db.Column(db.Integer,db.ForeignKey(Users.id),nullable=False)
     owner = db.relationship("Users",back_populates='user_recipes',foreign_keys=[owner_id])
+
+    recipe_likers = db.relationship("Users",secondary="recipe_likes")
 
     def __init__(self,owner_id,title,instructions,ingredients,image_url,source_url,servings=None,cook_time=None):
         self.owner_id = owner_id
@@ -126,15 +127,23 @@ class Recipes(db.Model):
             return_dict["owner_username"] = Users.query.get(return_dict['owner_id']).username
 
         return return_dict
+
+class RecipeLikes(db.Model):
+    __tablename__ = "recipe_likes"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False)
+    recipe_id = db.Column(db.Integer,db.ForeignKey('recipes.id'), nullable=False)
+    # Item below is to make sure that person can't like recipe twice, seems to work
+    __table_args__ = (db.UniqueConstraint('user_id', 'recipe_id'), )
+
+    def __init__(self,user_id,recipe_id):
+        self.user_id = user_id
+        self.recipe_id=recipe_id
     
-
-
-
-
-
-
-
+    def saveToDB(self):
+        db.session.add(self)
+        db.session.commit()
     
-    
-    
-
+    def deleteFromDB(self):
+        db.session.delete(self)
+        db.session.commit()

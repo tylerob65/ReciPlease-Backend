@@ -1,4 +1,4 @@
-from app.models import Users, db, Recipes
+from app.models import Users, db, Recipes, RecipeLikes
 from app.auth.auth_helpers import basic_auth, token_auth
 from app.models import Recipes
 from flask import Blueprint, request
@@ -17,7 +17,46 @@ def backup_all_route():
     return {"success":"success"}
 
 
+@helpers.route("/test6")
+def test6_check_recipelike_relationship2():
+    recipe = Recipes.query.get(3)
+    print(recipe)
+    recipe_likers = recipe.recipe_likers
+    print(recipe_likers)
+    return {"hi":"hi"}
 
+@helpers.route("/test5")
+def test5_check_recipelike_relationships1():
+    user = Users.query.get(1)
+    print(user)
+    liked_recipes = user.liked_recipes
+    print(liked_recipes)
+    return {"hi":"hi"}
+
+@helpers.route("/test4")
+def test4_add_fake_like():
+    new_recipe_like = RecipeLikes(2,10)
+    new_recipe_like.saveToDB()
+    print(new_recipe_like)
+    return {"hi":"hi"}
+    
+
+@helpers.route("/test3")
+def test3():
+    # Test Code query the recipes of a given user
+    the_user = Users.query.get(1)
+    user_recipes = the_user.user_recipes
+    print(user_recipes)
+    print(user_recipes[0].to_dict())
+
+
+@helpers.route("/test2")
+def test2():
+    # Test code to query fake recipe
+    the_recipe = Recipes.query.get(1)
+    print(the_recipe)
+    print(the_recipe.instructions)
+    print(type(the_recipe.instructions))
 
 @helpers.route("/test1")
 def test1():
@@ -32,20 +71,3 @@ def test1():
     print(new_recipe.to_dict())
     # new_recipe.saveToDB()
     # print("Successfully saved to db")
-
-
-@helpers.route("/test2")
-def test2():
-    # Test code to query fake recipe
-    the_recipe = Recipes.query.get(1)
-    print(the_recipe)
-    print(the_recipe.instructions)
-    print(type(the_recipe.instructions))
-
-@helpers.route("/test3")
-def test3():
-    # Test Code query the recipes of a given user
-    the_user = Users.query.get(1)
-    user_recipes = the_user.user_recipes
-    print(user_recipes)
-    print(user_recipes[0].to_dict())
