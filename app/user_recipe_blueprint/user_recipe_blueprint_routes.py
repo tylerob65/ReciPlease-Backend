@@ -40,11 +40,12 @@ def get_recipe_for_view(recipe_id):
             "message":"Recipe ID does not exist",
             "severity":"error",
         }, 400
+    
     return {
         'status':'ok',
         'message':'successfully added recipe',
         'severity':'success',
-        'recipeInfo':recipe.to_dict(),
+        'recipeInfo':recipe.to_dict(show_owner_username=True),
     }, 200
     
 @user_recipe_blueprint.route('/editrecipe/<int:recipe_id>')
@@ -75,13 +76,79 @@ def get_recipe_for_modify(recipe_id):
     }, 200
     
 
-    
-    
-    
-
-
 @user_recipe_blueprint.post('/updaterecipe')
+@token_auth.login_required
 def modify_recipe():
-    print("got to post route")
+    data = request.json
+    recipe = Recipes.query.get(data['recipeID'])
+    if not recipe:
+        return {
+            "status":"not ok",
+            "message":"This recipe does not exist",
+            "severity":"error",
+        }, 400
+    
+    print(token_auth.current_user().id)
+    print("recipe owner id",recipe.owner_id)
+
+    if token_auth.current_user().id != recipe.owner_id:
+        return {
+            "status":"not ok",
+            "message":"You do not own this recipe",
+            "severity":"error",
+        }, 400
+    
+    recipe.title = data["recipe_title"]
+    recipe.instructions = data["instructions"]
+    recipe.ingredients = data["ingredients"]
+    recipe.image_url = data["image_url"]
+    recipe.source_url = data["source_url"]
+    recipe.servings = data["servings"]
+    recipe.cook_time = data["cook_time"]
+    recipe.saveToDB()
+    
+    return {
+        'status':'ok',
+        'message':'Found recipe info',
+        'severity':'success',
+        # 'recipeInfo':recipe.to_dict(),
+    }, 200
+    
+@user_recipe_blueprint.route('/getallrecipes')
+def get_all_recipes():
+    # recipe_list = Recipes.query.all()
+    # db.session
+    # recipe_dict
+    all_recipes_query = db.select(Recipes).order_by(Recipes.id)
+    all_recipes = db.session.execute(all_recipes_query).all()
+    # recipe_dict = {}
+    # for recipe in all_recipes:
+    #     recipe_as_dict = recipe[0].shallow_to_dict(show_owner_username=True)
+    #     recipe_num = recipe_as_dict['id']
+    #     recipe_dict[recipe_num] = recipe_as_dict
+    recipe_list = []
+    for recipe in all_recipes:
+        recipe_as_dict = recipe[0].shallow_to_dict(show_owner_username=True)
+        recipe_list.append(recipe_as_dict)
+    return {
+        'status':'ok',
+        'message':'Got All Recipe Info',
+        'severity':'success',
+        'data':recipe_list,
+    }, 200
+
+
     
     
+    # result = db.session.execute(db.select(Users).order_by(Users.id))
+    # all_recipes = 
+    # print(all_recipes)
+    # result_first = result.first()
+    # print(result_first)
+    # print(type(result_first))
+    # print(result_first[0])
+    # print(type(result_first[0]))
+    # print("results above")
+    # return {"hi":all_recipes}
+
+

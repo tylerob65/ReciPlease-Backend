@@ -21,7 +21,7 @@ class Users(db.Model):
     user_recipes = db.relationship("Recipes",foreign_keys='Recipes.owner_id',back_populates="owner")
     
 
-    def __init__(self, username, email, password, first_name,last_name):
+    def __init__(self, username, email, password, first_name, last_name):
         self.username = username
         self.email = email
         self.password = generate_password_hash(password)
@@ -82,8 +82,8 @@ class Recipes(db.Model):
         db.session.delete(self)
         db.session.commit()
     
-    def to_dict(self):
-        return {
+    def to_dict(self,show_owner_username=False):
+        return_dict = {
             'id':self.id,
             'owner_id':self.owner_id,
             'title':self.title,
@@ -94,6 +94,25 @@ class Recipes(db.Model):
             'servings':self.servings,
             'cook_time':self.cook_time,
         }
+
+        if show_owner_username:
+            return_dict["owner_username"] = Users.query.get(return_dict['owner_id']).username
+
+        return return_dict
+    
+    def shallow_to_dict(self,show_owner_username=False):
+        return_dict = {
+            'id':self.id,
+            'owner_id':self.owner_id,
+            'title':self.title,
+            'image_url':self.image_url,
+            'source_url':self.source_url,
+        }
+
+        if show_owner_username:
+            return_dict["owner_username"] = Users.query.get(return_dict['owner_id']).username
+
+        return return_dict
     
 
 
