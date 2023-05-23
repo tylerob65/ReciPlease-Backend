@@ -44,6 +44,19 @@ class Users(db.Model):
             'email':self.email,
             'apitoken':self.apitoken,
         }
+    def complete_to_dict(self):
+        return {
+            'id':self.id,
+            'username':self.username,
+            'email':self.email,
+            'apitoken':self.apitoken,
+            'password':self.password,
+            'first_name':self.first_name,
+            'last_name':self.last_name,
+            'profile_pic_url':self.profile_pic_url,
+            'active':self.active,
+            'date_joined':self.date_joined,
+        }
 
 class Recipes(db.Model):
     id = db.Column(db.Integer,primary_key=True)

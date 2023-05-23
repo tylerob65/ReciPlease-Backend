@@ -1,9 +1,23 @@
-from app.models import Users, db
+from app.models import Users, db, Recipes
 from app.auth.auth_helpers import basic_auth, token_auth
 from app.models import Recipes
 from flask import Blueprint, request
+from app.helpers.backup_database import backup_all
+import json
+import datetime
+
 
 helpers = Blueprint('helpers',__name__)
+
+
+@helpers.route("/backupall")
+def backup_all_route():
+    backup_all()
+    
+    return {"success":"success"}
+
+
+
 
 @helpers.route("/test1")
 def test1():
