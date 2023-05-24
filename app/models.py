@@ -19,7 +19,7 @@ class Users(db.Model):
     date_joined = db.Column(db.DateTime,nullable = False, default=datetime.utcnow())
 
     user_recipes = db.relationship("Recipes",foreign_keys='Recipes.owner_id',back_populates="owner")
-    liked_recipes = db.relationship("Recipes",secondary="recipe_likes",lazy=True)
+    liked_recipes = db.relationship("Recipes",secondary="recipe_likes",lazy=True,back_populates="recipe_likers")
     
 
     def __init__(self, username, email, password, first_name, last_name):
@@ -76,7 +76,7 @@ class Recipes(db.Model):
     owner_id = db.Column(db.Integer,db.ForeignKey(Users.id),nullable=False)
     owner = db.relationship("Users",back_populates='user_recipes',foreign_keys=[owner_id])
 
-    recipe_likers = db.relationship("Users",secondary="recipe_likes")
+    recipe_likers = db.relationship("Users",secondary="recipe_likes",lazy=True,back_populates="liked_recipes")
 
     def __init__(self,owner_id,title,instructions,ingredients,image_url,source_url,servings=None,cook_time=None):
         self.owner_id = owner_id
@@ -147,3 +147,10 @@ class RecipeLikes(db.Model):
     def deleteFromDB(self):
         db.session.delete(self)
         db.session.commit()
+    
+    def to_dict(self):
+        return {
+            "id":self.id,
+            "user_id":self.user_id,
+            "recipe_id":self.recipe_id,
+        }

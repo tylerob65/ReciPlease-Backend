@@ -29,6 +29,7 @@ def basic_auth_error(status):
 
 @token_auth.error_handler
 def token_auth_error(status):
+    print(request)
     return {
         'status': 'not ok',
         'message': "Invalid Credentials",

@@ -20,6 +20,16 @@ def backup_all_route():
     
     return {"success":"success"}
 
+@helpers.route("/test9")
+def test_recipe_likes_backup():
+    all_recipe_likes = RecipeLikes.query.all()
+    output = []
+    for recipe_like in all_recipe_likes:
+        output.append(recipe_like.to_dict())
+
+    print(output)
+
+    return output
 
 @helpers.route("/test8")
 def sql_test():
@@ -54,8 +64,6 @@ def rapid_api_test():
     # return response.json()
     return header_dump
 
-
-
 @helpers.route("/test6")
 def test6_check_recipelike_relationship2():
     recipe = Recipes.query.get(3)
@@ -81,7 +89,7 @@ def test4_add_fake_like():
     
 
 @helpers.route("/test3")
-def test3():
+def test_query_recipes_of_user():
     # Test Code query the recipes of a given user
     the_user = Users.query.get(1)
     user_recipes = the_user.user_recipes
@@ -90,7 +98,7 @@ def test3():
 
 
 @helpers.route("/test2")
-def test2():
+def test_query_fake_recipe():
     # Test code to query fake recipe
     the_recipe = Recipes.query.get(1)
     print(the_recipe)
@@ -98,7 +106,7 @@ def test2():
     print(type(the_recipe.instructions))
 
 @helpers.route("/test1")
-def test1():
+def test_add_fake_recipe():
     # Test code to add fake recipe
     print("Before new recipe code")
     ingredients = ["1 lb tomatoes","2 cups cheese","3 tsp sugar"]
