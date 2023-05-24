@@ -7,6 +7,9 @@ import json
 import datetime
 import requests
 import os
+from sqlalchemy import func as sql_func
+from sqlalchemy import desc as sql_desc
+
 
 RAPID_API_KEY = os.environ.get('RAPID_API_KEY')
 RAPID_API_HOST = os.environ.get('RAPID_API_HOST')
@@ -19,6 +22,107 @@ def backup_all_route():
     backup_all()
     
     return {"success":"success"}
+
+
+@helpers.route("/test12")
+def test_sql_paginate2():
+    stm = db.select(Users.id).order_by(sql_desc(Users.id))
+    print(stm)
+    result = db.session.execute(stm).all()
+    print(result)
+
+    stm2 = db.select(Users.id).order_by(sql_desc(Users.id)).limit(2)
+    print(stm2)
+    result = db.session.execute(stm2).all()
+    print(result)
+
+    stm3 = db.select(Users.id).order_by(sql_desc(Users.id)).offset(5).limit(2)
+    print(stm3)
+    result = db.session.execute(stm3).all()
+    print(result)
+
+    stm4 = db.select(Users.id).order_by(sql_desc(Users.id)).fetch(1)
+    print(stm4)
+    result = db.session.execute(stm4).all()
+    print(result)
+
+    # stm5 = db.select(sql_func.count(stm.subquery()))
+    # print(stm5)
+    # result = db.session.execute(stm5).all()
+    # print(result)
+
+    print("new group")
+    stm = db.select(Users.id).order_by(sql_desc(Users.id))
+    print("stm")
+    print(stm)
+    sub = stm.subquery()
+    print("sub")
+    print(sub)
+    print("new sub")
+    new_sub = db.select(sql_func.count(sub))
+    print(new_sub)
+
+    # print("result")
+    # print(db.session.execute(new_sub).all())
+    new_stm = stm.with_only_columns([sql_func.count()])
+    print(new_stm)
+    
+
+    # print(db.session.execute(stm).all())
+
+
+
+    # result = db.session.execute(stm.subquery())
+    # print(result)
+
+
+    
+
+
+
+
+
+    return {"hi":"hi"}
+
+@helpers.route("/test11")
+def test_sql_paginate():
+    stm = db.select(RecipeLikes.recipe_id,sql_func.count(RecipeLikes.id).label("count"))
+    stm = stm.group_by(RecipeLikes.recipe_id)
+    stm = stm.order_by(sql_desc("count"))
+    print("stm")
+    print(stm)
+
+    # 
+    # Outcome - Paginate can't handle compound select
+    # 
+
+    pagination = db.paginate(stm,per_page=2)
+    print("pagination")
+    print(pagination)
+    print("pagination.page")
+    print(pagination.page)
+    print("pagination.total")
+    print(pagination.total)
+    # print("pagination.items")
+    # print(pagination.items)
+    for item in pagination:
+        print(item)
+
+
+    return {"hi":"hi"}
+
+@helpers.route("/test10")
+def test_sql_select():
+    # Selects Recipe_likes and sorts them in descending order
+    stm = db.select(RecipeLikes.recipe_id,sql_func.count(RecipeLikes.id).label("count"))
+    stm = stm.group_by(RecipeLikes.recipe_id)
+    stm = stm.order_by(sql_desc("count"))
+    print(stm)
+    output = db.session.execute(stm)
+    print(output)
+    print(output.all())
+    return {"hi":"hi"}
+
 
 @helpers.route("/test9")
 def test_recipe_likes_backup():
