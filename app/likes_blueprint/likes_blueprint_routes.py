@@ -19,9 +19,9 @@ def does_user_like_recipe(recipe_id):
             "data":{"liked":len(result)==1},
         }, 200
 
-@likes_blueprint.route('/likerecipe/<int:recipe_id>')
-@token_auth.login_required
-def like_recipe(recipe_id):
+# @likes_blueprint.route('/likerecipe/<int:recipe_id>')
+# @token_auth.login_required
+# def like_recipe(recipe_id):
     user = token_auth.current_user()
     print(user)
     user_id = user.id
@@ -70,33 +70,33 @@ def unlike_recipe(recipe_id):
     }, 200
 
 
-# @likes_blueprint.route('/likerecipe')
-# @token_auth.login_required
-# def like_recipe():
-#     print(request)
-#     user = token_auth.current_user()
-#     print(user)
-#     user_id = user.id
-#     data = request.json
+@likes_blueprint.post('/likerecipe')
+@token_auth.login_required
+def like_recipe():
+    print(request)
+    user = token_auth.current_user()
+    print(user)
+    user_id = user.id
+    data = request.json
 
-#     # TODO double check we are sending it along as recipe_id
-#     recipe_id = data["recipe_id"]
-#     result = RecipeLikes.query.filter(db.and_(RecipeLikes.user_id==user_id,RecipeLikes.recipe_id==recipe_id)).all()
-#     if len(result)==1:        
-#         return {
-#             "status":"not ok",
-#             "message":"Recipe already liked",
-#             "severity":"error",
-#         }, 401
+    # TODO double check we are sending it along as recipe_id
+    recipe_id = data["recipe_id"]
+    result = RecipeLikes.query.filter(db.and_(RecipeLikes.user_id==user_id,RecipeLikes.recipe_id==recipe_id)).all()
+    if len(result)==1:        
+        return {
+            "status":"not ok",
+            "message":"Recipe already liked",
+            "severity":"error",
+        }, 401
     
-#     new_like = RecipeLikes(user_id,recipe_id)
-#     new_like.saveToDB()
+    new_like = RecipeLikes(user_id,recipe_id)
+    new_like.saveToDB()
 
-#     return {
-#         "status":"ok",
-#         "message":"Successfully Liked Recipe",
-#         "severity":"success",
-#     }, 200
+    return {
+        "status":"ok",
+        "message":"Successfully Liked Recipe",
+        "severity":"success",
+    }, 200
 
 
 
