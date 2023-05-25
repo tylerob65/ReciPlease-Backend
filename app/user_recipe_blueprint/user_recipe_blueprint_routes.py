@@ -1,6 +1,9 @@
-from app.models import Recipes, Users, db
+from app.models import Recipes, Users, db, RecipeLikes
 from app.auth.auth_helpers import basic_auth, token_auth
 from flask import Blueprint, request
+from sqlalchemy import func as sql_func
+from math import ceil
+from sqlalchemy import desc as sql_desc
 
 user_recipe_blueprint = Blueprint('user_recipe_blueprint',__name__)
 
@@ -158,5 +161,61 @@ def get_user_recipes():
     }, 200
 
 
+@user_recipe_blueprint.route('/gettoprecipes/<int:recipe_page>')
+def get_top_recipes(recipe_page):
+    
+    total_recipes_stm = db.select(sql_func.count(Recipes.id))
+    
+    total_recipes = db.session.execute(total_recipes_stm).first()[0]
+    recipes_per_page = 5
+    limit = 5
+    offset = (recipe_page - 1) * recipes_per_page
+    max_page = ceil(total_recipes/recipes_per_page)
+
+    query = db.session.query(
+        Recipes.id,
+        Recipes.title,
+        Users.username,
+        Recipes.owner_id,
+        sql_func.count(RecipeLikes.recipe_id).label('like_count'))
+    query = query.join(Users, Recipes.owner_id == Users.id)
+    query = query.outerjoin(RecipeLikes, Recipes.id == RecipeLikes.recipe_id)
+    query = query.group_by(Recipes.id, Users.username)
+    query = query.order_by(sql_desc('like_count'),sql_desc(Recipes.date_added))
+    query = query.limit(limit).offset(offset)
+    results = query.all()
+
+    recipe_list = []
+
+    for item in results:
+        recipe_list.append({
+            "recipe_id":item[0],
+            "recipe_title":item[1],
+            "owner_username":item[2],
+            "owner_id":item[3],
+            "like_count":item[4],
+        })
+    
+    data = {
+        "recipe_page":recipe_page,
+        "max_pages":max_page,
+        "recipe_list":recipe_list,
+    }
+
+    return {
+        'status':'ok',
+        'message':'Got All Recipe Info',
+        'severity':'success',
+        'data':data,
+    }, 200
+    
+    print(total_recipes_stm)
+    print(total_recipes)
+    # # CODE BELOW COUNTS THE AMOUNT OF RECIPES
+    # stm = db.select(sql_func.count(Recipes.id))
+    # print(stm)
+    # outcome = db.session.execute(stm).first()[0]
+
+    return {"total_pages":total_recipes}
 
 

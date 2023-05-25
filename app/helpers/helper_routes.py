@@ -94,10 +94,10 @@ def test_sql_paginate2():
     sub = stm.subquery()
     print(sub)
     print(db.select(sub))
-    stm = (
-        select(Users)
+    # stm = (
+    #     select(Users)
         
-    )
+    # )
 
     print(sub)
     # new_stm = db.select(Recipes.id,Recipes.title,Recipes.owner_id).label("subq")
