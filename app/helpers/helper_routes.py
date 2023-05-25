@@ -23,57 +23,102 @@ def backup_all_route():
     
     return {"success":"success"}
 
+# @helpers.route("/test13")
+# def test_sql_paginate3():
+#     pass
+
+@helpers.route("/test13")
+def test_sql_paginate3():
+    
+    # The following works
+    query = db.session.query(
+        Recipes.id,Recipes.title,
+        Users.username,
+        sql_func.count(RecipeLikes.recipe_id).label('like_count'))
+    query = query.join(Users, Recipes.owner_id == Users.id)
+    query = query.outerjoin(RecipeLikes, Recipes.id == RecipeLikes.recipe_id)
+    query = query.group_by(Recipes.id, Users.username).order_by(sql_desc('like_count'),sql_desc(Recipes.date_added))
+    # The items below just need to be tuned for which page to show
+    query = query.limit(5).offset(10)
+    query = query.all()
+    # print(query)
+    for item in query:
+        print(item)
+    return {"hi":"hi"}
 
 @helpers.route("/test12")
 def test_sql_paginate2():
-    stm = db.select(Users.id).order_by(sql_desc(Users.id))
-    print(stm)
-    result = db.session.execute(stm).all()
-    print(result)
-
-    stm2 = db.select(Users.id).order_by(sql_desc(Users.id)).limit(2)
-    print(stm2)
-    result = db.session.execute(stm2).all()
-    print(result)
-
-    stm3 = db.select(Users.id).order_by(sql_desc(Users.id)).offset(5).limit(2)
-    print(stm3)
-    result = db.session.execute(stm3).all()
-    print(result)
-
-    stm4 = db.select(Users.id).order_by(sql_desc(Users.id)).fetch(1)
-    print(stm4)
-    result = db.session.execute(stm4).all()
-    print(result)
-
-    # stm5 = db.select(sql_func.count(stm.subquery()))
-    # print(stm5)
-    # result = db.session.execute(stm5).all()
+    # stm = db.select(Users.id).order_by(sql_desc(Users.id))
+    # print(stm)
+    # result = db.session.execute(stm).all()
     # print(result)
 
-    print("new group")
-    stm = db.select(Users.id).order_by(sql_desc(Users.id))
-    print("stm")
+    # stm2 = db.select(Users.id).order_by(sql_desc(Users.id)).limit(2)
+    # print(stm2)
+    # result = db.session.execute(stm2).all()
+    # print(result)
+
+    # stm3 = db.select(Users.id).order_by(sql_desc(Users.id)).offset(5).limit(2)
+    # print(stm3)
+    # result = db.session.execute(stm3).all()
+    # print(result)
+
+    # stm4 = db.select(Users.id).order_by(sql_desc(Users.id)).fetch(1)
+    # print(stm4)
+    # result = db.session.execute(stm4).all()
+    # print(result)
+
+    # print("new group")
+    # stm = db.select(Users.id).order_by(sql_desc(Users.id))
+    # print("stm")
+    # print(stm)
+    # sub = stm.subquery()
+    # print("sub")
+    # print(sub)
+    # print("new sub")
+    # new_sub = db.select(sql_func.count(sub))
+    # print(new_sub)
+
+    # # CODE BELOW COUNTS THE AMOUNT OF RECIPES
+    # stm = db.select(sql_func.count(Recipes.id))
+    # print(stm)
+    # outcome = db.session.execute(stm).first()[0]
+    # print(outcome)
+
+    stm = db.select(Recipes.id,Recipes.title,Recipes.owner_id)
     print(stm)
+
+    stm = db.select(RecipeLikes.recipe_id,sql_func.count(RecipeLikes.id).label("count"))
+    stm = stm.group_by(RecipeLikes.recipe_id)
+    stm = stm.order_by(sql_desc("count"))
     sub = stm.subquery()
-    print("sub")
     print(sub)
-    print("new sub")
-    new_sub = db.select(sql_func.count(sub))
-    print(new_sub)
+    print(db.select(sub))
+    stm = (
+        select(Users)
+        
+    )
 
-    # print("result")
-    # print(db.session.execute(new_sub).all())
-    new_stm = stm.with_only_columns([sql_func.count()])
-    print(new_stm)
+    print(sub)
+    # new_stm = db.select(Recipes.id,Recipes.title,Recipes.owner_id).label("subq")
+    # j = db.join(Recipes,sub,Recipes.id==sub.c.recipe_id)
+    # # stm=db.select(Recipes).select_from(j)
+    # stm=db.select(Recipes.id,sub.count).select_from(j)
+    # results = db.session.execute(stm).all()
+    # print(results)
+    # print(results[1])
+    # Recipes_by_like = db.session.execute(stm)
+    # print(Recipes_by_like.all())
+
+    """
+    SELECT RECIPES
+    JOIN SUBQUERY ON ()
     
+    
+    """
 
-    # print(db.session.execute(stm).all())
-
-
-
-    # result = db.session.execute(stm.subquery())
-    # print(result)
+    # stm = db.select(Recipes.id,Recipes.title,Recipes.owner_id)
+    # print(stm)
 
 
     
