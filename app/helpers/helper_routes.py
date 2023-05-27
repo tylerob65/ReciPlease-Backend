@@ -23,6 +23,85 @@ def backup_all_route():
     
     return {"success":"success"}
 
+@helpers.route("/test18")
+def quick_remove_recipe():
+    recipe_number = 22
+    recipe = Recipes.query.get(recipe_number)
+    print(recipe)
+    print(recipe.to_dict())
+    recipe.deleteFromDB()
+    return recipe.to_dict()
+
+@helpers.route("/test17")
+def test_prep_spoonacular_recipe_for_entry_into_db():
+    with open("data_backups/recipe_test 2023 0527 H16M14.json") as f:
+        results = json.loads(f.read())
+    
+    ingredients = [ingredient["original"] for ingredient in results["extendedIngredients"]]
+    instructions = []
+    for instruction in results["analyzedInstructions"][0]["steps"]:
+        instructions.append(instruction["step"])
+    
+    recipe_info = {
+        "title":results["title"],
+        "image_url":results["image"],
+        "source_url":results["sourceUrl"],
+        "servings":results["servings"],
+        "cook_time":results["readyInMinutes"],
+        "owner_id":1,
+        "ingredients":ingredients,
+        "instructions":instructions,
+        "spoonacular_id":results["id"]
+    }
+
+    combined_dict = {
+        "original":results,
+        "mine":recipe_info,
+    }
+
+    save_info = True
+    if not save_info:
+        return combined_dict
+    
+    recipe = Recipes(
+        recipe_info["owner_id"],
+        recipe_info["title"],
+        recipe_info["instructions"],
+        recipe_info["ingredients"],
+        recipe_info["image_url"],
+        recipe_info["source_url"],
+        servings=recipe_info["servings"],
+        cook_time=recipe_info["cook_time"],
+        spoonacular_id= recipe_info["spoonacular_id"],
+    )
+    recipe.saveToDB()
+    combined_dict["success"] = True
+    return combined_dict
+
+
+@helpers.route("/test16")
+def test_store_spoonacular_recipe_and_store():
+    # Note. Just given permission to store spoonacular recipes as long as I don't host
+    url = "https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/random"
+
+    querystring = {"number":"1"}
+
+    headers = {
+	    "X-RapidAPI-Key": RAPID_API_KEY,
+	    "X-RapidAPI-Host": RAPID_API_HOST,
+    }
+
+    response = requests.get(url, headers=headers, params=querystring)
+    results = response.json()
+    results = results["recipes"][0]
+    print(results)
+    print(type(results))
+    json_object = json.dumps(results)
+    time_string = datetime.datetime.now().strftime("%Y %m%d H%HM%M")
+    with open(f"data_backups/recipe_test "+time_string+".json","w") as f:
+        f.write(json_object)
+
+    return results
 
 @helpers.route("/test15")
 def test_show_temporary_stored_recipe_json_for_use_in_formatting():

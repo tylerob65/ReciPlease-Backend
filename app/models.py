@@ -76,9 +76,11 @@ class Recipes(db.Model):
     owner_id = db.Column(db.Integer,db.ForeignKey(Users.id),nullable=False)
     owner = db.relationship("Users",back_populates='user_recipes',foreign_keys=[owner_id])
 
+    spoonacular_id = db.Column(db.Integer)
+
     recipe_likers = db.relationship("Users",secondary="recipe_likes",lazy=True,back_populates="liked_recipes")
 
-    def __init__(self,owner_id,title,instructions,ingredients,image_url,source_url,servings=None,cook_time=None):
+    def __init__(self,owner_id,title,instructions,ingredients,image_url,source_url,servings=None,cook_time=None,spoonacular_id=None):
         self.owner_id = owner_id
         self.title = title
         self.instructions = instructions
@@ -87,6 +89,7 @@ class Recipes(db.Model):
         self.source_url = source_url
         self.servings = servings
         self.cook_time = cook_time
+        self.spoonacular_id = spoonacular_id
 
     def saveToDB(self):
         db.session.add(self)
@@ -107,6 +110,7 @@ class Recipes(db.Model):
             'source_url':self.source_url,
             'servings':self.servings,
             'cook_time':self.cook_time,
+            "spoonacular_id":self.spoonacular_id,
         }
 
         if show_owner_username:
