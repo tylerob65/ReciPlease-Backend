@@ -23,9 +23,59 @@ def backup_all_route():
     
     return {"success":"success"}
 
-# @helpers.route("/test13")
-# def test_sql_paginate3():
-#     pass
+
+@helpers.route("/test15")
+def test_show_temporary_stored_recipe_json_for_use_in_formatting():
+
+    with open("data_backups/recipe_test 2023 0525 H22M06.json") as f:
+        results = json.loads(f.read())
+    
+    return results
+
+@helpers.route("/test14")
+def test_analyze_recipe():
+    recipe = Recipes.query.get(1)
+    recipe_info = recipe.to_dict()
+
+    url = "https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/analyze"
+
+    querystring = {"language":"en","includeNutrition":"true","includeTaste":"false"}
+
+    headers = {
+        "content-type": "application/json",
+        "X-RapidAPI-Key": RAPID_API_KEY,
+        "X-RapidAPI-Host": RAPID_API_HOST
+    }
+
+    payload = {
+        "title": recipe_info["title"],
+        "ingredients": recipe_info["ingredients"],
+        "instructions": " ".join(recipe_info["instructions"]),
+    }
+    if recipe_info["servings"]:
+        payload["servings"] = recipe_info["servings"]
+    response = requests.post(url, json=payload, headers=headers, params=querystring)
+    results = response.json()
+    print(results)
+    
+    print(" ".join(recipe_info["instructions"]))
+    
+    print(recipe_info)
+
+    # Create temporary backup of one recipe so I can work on formatting frontend
+    # without repeated API calls
+    json_object = json.dumps(results)
+    time_string = datetime.datetime.now().strftime("%Y %m%d H%HM%M")
+    with open(f"data_backups/recipe_test "+time_string+".json","w") as f:
+        f.write(json_object)
+
+    
+
+
+
+    return results["nutrition"]
+    # return {"hi":"hi"}
+
 
 @helpers.route("/test13")
 def test_sql_paginate3():
