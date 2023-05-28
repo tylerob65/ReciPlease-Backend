@@ -243,13 +243,40 @@ def get_nutritional_info(recipe_id):
             include_nutrition=True
         )
         nutrients = response["nutrition"]["nutrients"]
-    nutritional_info = {}
+    nutritional_info = {
+        "primary":{},
+        "secondary":{},
+    }
     for nutrient in nutrients:
-        nutritional_info[nutrient["name"]] = {
+        name = nutrient["name"]
+        info = {
             "amount":nutrient["amount"],
             "unit":nutrient["unit"],
-            "percentOfDailyNeeds":nutrient["percentOfDailyNeeds"]
+            "percentOfDailyNeeds":nutrient["percentOfDailyNeeds"],
         }
+        
+        primary_set = set([
+            "Cholesterol",
+            "Fat",
+            "Fiber",
+            "Net Carbohydrates",
+            "Protein",
+            "Sodium",
+            "Sugar",
+        ])
+
+        if name == "Calories":
+            nutritional_info["Calories"] = info
+        elif name == "Carbohydrates":
+            nutritional_info["primary"]["Carbs"] = info
+        elif name in primary_set:
+            nutritional_info["primary"][name] = info
+        else: 
+            nutritional_info["secondary"][name] = info
+    
+    print(nutritional_info)
+    
+    # Re-enable this when done testing
     recipe.nutritional_info = nutritional_info
     recipe.saveToDB()
     return {
