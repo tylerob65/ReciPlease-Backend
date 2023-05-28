@@ -26,6 +26,7 @@ def backup_all_route():
 
 # Reminder recipe id 23 has spoonacular id = 641907
 
+
 @helpers.route("/test24")
 def add_nutritional_info_to_db():
     recipe = Recipes.query.get(28)
@@ -249,22 +250,22 @@ def test_analyze_recipe():
     results = response.json()
     print(results)
     
-    print(" ".join(recipe_info["instructions"]))
+    # print(" ".join(recipe_info["instructions"]))
     
-    print(recipe_info)
+    # print(recipe_info)
 
     # Create temporary backup of one recipe so I can work on formatting frontend
     # without repeated API calls
-    json_object = json.dumps(results)
-    time_string = datetime.datetime.now().strftime("%Y %m%d H%HM%M")
-    with open(f"data_backups/recipe_test "+time_string+".json","w") as f:
-        f.write(json_object)
+    # json_object = json.dumps(results)
+    # time_string = datetime.datetime.now().strftime("%Y %m%d H%HM%M")
+    # with open(f"data_backups/recipe_test "+time_string+".json","w") as f:
+    #     f.write(json_object)
 
     
 
 
 
-    return results["nutrition"]
+    return results
     # return {"hi":"hi"}
 
 @helpers.route("/test13")

@@ -1,5 +1,6 @@
 from app.models import Recipes, Users, db, RecipeLikes
 from app.auth.auth_helpers import basic_auth, token_auth
+from app.api_helpers import API_Calls
 from flask import Blueprint, request
 from sqlalchemy import func as sql_func
 from math import ceil
@@ -218,4 +219,54 @@ def get_top_recipes(recipe_page):
 
     return {"total_pages":total_recipes}
 
+@user_recipe_blueprint.route('/getnutritionalinfo/<int:recipe_id>')
+def get_nutritional_info(recipe_id):
+    recipe = Recipes.query.get(recipe_id)
+    # Check if already have nutritional_info and send over if I do
+    if recipe.nutritional_info:
+        return {
+            'status':'ok',
+            'message':'Got nutritional info',
+            'severity':'success',
+            'data':recipe.nutritional_info
+            }, 200
+    
+    if recipe.spoonacular_id:
+        response = API_Calls.get_nutrition_spoonacular(recipe.spoonacular_id)
+        nutrients = response["nutrients"]
+    else:
+        response = API_Calls.get_analyze_user_recipe(
+            recipe.title,
+            recipe.ingredients,
+            recipe.instructions,
+            recipe.servings,
+            include_nutrition=True
+        )
+        nutrients = response["nutrition"]["nutrients"]
+    nutritional_info = {}
+    for nutrient in nutrients:
+        nutritional_info[nutrient["name"]] = {
+            "amount":nutrient["amount"],
+            "unit":nutrient["unit"],
+            "percentOfDailyNeeds":nutrient["percentOfDailyNeeds"]
+        }
+    recipe.nutritional_info = nutritional_info
+    recipe.saveToDB()
+    return {
+        'status':'ok',
+        'message':'Got All Recipe Info',
+        'severity':'success',
+        'data':nutritional_info
+        }, 200
 
+    
+    
+    
+    
+
+
+
+        
+    return recipe.nutritional_info
+    
+    return {"didnt find nutritional info":"didn't"}
