@@ -1,6 +1,7 @@
 from app.models import Users, db, Recipes, RecipeLikes
 from app.auth.auth_helpers import basic_auth, token_auth
 from app.models import Recipes
+from app.api_helpers import API_Calls
 from flask import Blueprint, request
 from app.helpers.backup_database import backup_all
 import json
@@ -22,6 +23,71 @@ def backup_all_route():
     backup_all()
     
     return {"success":"success"}
+
+# Reminder recipe id 23 has spoonacular id = 641907
+
+@helpers.route("/test24")
+def add_nutritional_info_to_db():
+    recipe = Recipes.query.get(28)
+    results = API_Calls.get_nutrition_spoonacular(recipe.spoonacular_id)
+    nutritional_info = {}
+    for nutrient in results["nutrients"]:
+        nutritional_info[nutrient["name"]] = {
+            "amount":nutrient["amount"],
+            "unit":nutrient["unit"],
+            "percentOfDailyNeeds":nutrient["percentOfDailyNeeds"]
+        }
+    recipe.nutritional_info = nutritional_info
+    recipe.saveToDB()
+    print(recipe.nutritional_info)
+    return recipe.nutritional_info
+    
+
+
+@helpers.route("/test23")
+def test_get_nutrient_info_from_db():
+    recipe = Recipes.query.get(28)
+    print(recipe.nutritional_info)
+    return {"hi":"hi"}
+
+    
+
+@helpers.route("/test22")
+def test_get_spoonacular_nutrition():
+    results = API_Calls.get_nutrition_spoonacular(641907)
+
+    new_dict = {}
+    for nutrient in results["nutrients"]:
+        new_dict[nutrient["name"]] = {
+            "amount":nutrient["amount"],
+            "unit":nutrient["unit"],
+            "percentOfDailyNeeds":nutrient["percentOfDailyNeeds"]
+        }
+    return new_dict
+
+
+    
+    
+    print(results)
+    return results
+
+@helpers.route("/test21")
+def test_get_recipe_anaysis():
+    recipe = Recipes.query.get(1)
+    results = API_Calls.get_analyze_user_recipe(
+        recipe.title,
+        recipe.ingredients,
+        recipe.instructions,
+        servings = recipe.servings,
+    )
+    return results
+
+    
+
+@helpers.route("/test20")
+def test_get_random_recipe_helper_routes():
+    recipe_info = API_Calls.get_random_recipe()
+    return recipe_info
 
 @helpers.route("/test19")
 def add_random_recipe_to_db():
@@ -67,6 +133,7 @@ def add_random_recipe_to_db():
         spoonacular_id= recipe_info["spoonacular_id"],
     )
     recipe.saveToDB()
+    print(recipe.to_dict())
     return recipe_info
 
 @helpers.route("/test18")
@@ -123,7 +190,6 @@ def test_prep_spoonacular_recipe_for_entry_into_db():
     recipe.saveToDB()
     combined_dict["success"] = True
     return combined_dict
-
 
 @helpers.route("/test16")
 def test_store_spoonacular_recipe_and_store():
@@ -200,7 +266,6 @@ def test_analyze_recipe():
 
     return results["nutrition"]
     # return {"hi":"hi"}
-
 
 @helpers.route("/test13")
 def test_sql_paginate3():
