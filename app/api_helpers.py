@@ -57,9 +57,65 @@ class API_Calls():
         response = requests.get(url, headers=headers_get)
         return response.json()
 
+    def process_nutrition(nutrients):
+        nutritional_info = {
+            "primary":{},
+            "secondary":{},
+        }
+        for nutrient in nutrients:
+            name = nutrient["name"]
+            info = {
+                "amount":nutrient["amount"],
+                "unit":nutrient["unit"],
+                "percentOfDailyNeeds":nutrient["percentOfDailyNeeds"],
+            }
+            
+            primary_set = set([
+                "Cholesterol",
+                "Fat",
+                "Fiber",
+                "Net Carbohydrates",
+                "Protein",
+                "Sodium",
+                "Sugar",
+            ])
+
+            if name == "Calories":
+                nutritional_info["Calories"] = info
+            elif name == "Carbohydrates":
+                nutritional_info["primary"]["Carbs"] = info
+            elif name in primary_set:
+                nutritional_info["primary"][name] = info
+            else: 
+                nutritional_info["secondary"][name] = info
+        return nutritional_info
+        
+    def get_recipe_info_spoonacular(spoonacular_id):
+        url = f"{base_url}/recipes/{spoonacular_id}/information"
+        response = requests.get(url, headers=headers_get)
+        return response.json()
+
+    def process_recipe_info_spoonacular(recipe):
+        ingredients = [ingredient["original"] for ingredient in recipe["extendedIngredients"]]
+        instructions = []
+        for instruction_group in recipe["analyzedInstructions"]:
+            for instruction in instruction_group["steps"]:
+                instructions.append(instruction["step"])
+        
+        recipe_info = {
+            "title":recipe["title"],
+            "image_url":recipe["image"],
+            "source_url":recipe["sourceUrl"],
+            "servings":recipe["servings"],
+            "cook_time":recipe["readyInMinutes"],
+            "ingredients":ingredients,
+            "instructions":instructions,
+            "spoonacular_id":recipe["id"]
+        }
+        return recipe_info
 
         
-        
+
         
         
         

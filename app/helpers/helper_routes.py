@@ -18,6 +18,7 @@ RAPID_API_HOST = os.environ.get('RAPID_API_HOST')
 helpers = Blueprint('helpers',__name__)
 
 
+
 @helpers.route("/backupall")
 def backup_all_route():
     backup_all()
@@ -25,6 +26,29 @@ def backup_all_route():
     return {"success":"success"}
 
 # Reminder recipe id 23 has spoonacular id = 641907
+
+
+@helpers.route("/test26")
+def test_get_specific_recipe_instructions():
+    with open("data_backups/recipe_test_drink.json") as f:
+        recipe = json.loads(f.read())
+    instructions = []
+    for instruction_group in recipe["analyzedInstructions"]:
+        for instruction in instruction_group["steps"]:
+            instructions.append(instruction["step"])
+    return instructions
+
+
+
+@helpers.route("/test25")
+def test_get_specific_recipe_info_and_save():
+    recipe = API_Calls.get_recipe_info_spoonacular(659782)
+    # recipe = API_Calls.get_recipe_info_spoonacular(636874)
+    json_object = json.dumps(recipe)
+    with open(f"data_backups/recipe_test_drink.json","w") as f:
+        f.write(json_object)
+
+    return recipe
 
 
 @helpers.route("/test24")
@@ -44,7 +68,6 @@ def add_nutritional_info_to_db():
     return recipe.nutritional_info
     
 
-
 @helpers.route("/test23")
 def test_get_nutrient_info_from_db():
     recipe = Recipes.query.get(28)
@@ -55,7 +78,7 @@ def test_get_nutrient_info_from_db():
 
 @helpers.route("/test22")
 def test_get_spoonacular_nutrition():
-    results = API_Calls.get_nutrition_spoonacular(641907)
+    results = API_Calls.get_nutrition_spoonacular(659782)
 
     new_dict = {}
     for nutrient in results["nutrients"]:
@@ -83,7 +106,6 @@ def test_get_recipe_anaysis():
     )
     return results
 
-    
 
 @helpers.route("/test20")
 def test_get_random_recipe_helper_routes():

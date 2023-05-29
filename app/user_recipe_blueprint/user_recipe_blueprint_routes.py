@@ -5,6 +5,7 @@ from flask import Blueprint, request
 from sqlalchemy import func as sql_func
 from math import ceil
 from sqlalchemy import desc as sql_desc
+import json
 
 user_recipe_blueprint = Blueprint('user_recipe_blueprint',__name__)
 
@@ -79,7 +80,6 @@ def get_recipe_for_modify(recipe_id):
         'recipeInfo':recipe.to_dict(),
     }, 200
     
-
 @user_recipe_blueprint.post('/updaterecipe')
 @token_auth.login_required
 def modify_recipe():
@@ -141,8 +141,6 @@ def get_all_recipes():
         'data':recipe_list,
     }, 200
 
-
-    
 @user_recipe_blueprint.route('/getuserrecipes')
 @token_auth.login_required
 def get_user_recipes():
@@ -160,7 +158,6 @@ def get_user_recipes():
         'severity':'success',
         'data':recipe_list,
     }, 200
-
 
 @user_recipe_blueprint.route('/gettoprecipes/<int:recipe_page>')
 def get_top_recipes(recipe_page):
@@ -243,45 +240,15 @@ def get_nutritional_info(recipe_id):
             include_nutrition=True
         )
         nutrients = response["nutrition"]["nutrients"]
-    nutritional_info = {
-        "primary":{},
-        "secondary":{},
-    }
-    for nutrient in nutrients:
-        name = nutrient["name"]
-        info = {
-            "amount":nutrient["amount"],
-            "unit":nutrient["unit"],
-            "percentOfDailyNeeds":nutrient["percentOfDailyNeeds"],
-        }
-        
-        primary_set = set([
-            "Cholesterol",
-            "Fat",
-            "Fiber",
-            "Net Carbohydrates",
-            "Protein",
-            "Sodium",
-            "Sugar",
-        ])
-
-        if name == "Calories":
-            nutritional_info["Calories"] = info
-        elif name == "Carbohydrates":
-            nutritional_info["primary"]["Carbs"] = info
-        elif name in primary_set:
-            nutritional_info["primary"][name] = info
-        else: 
-            nutritional_info["secondary"][name] = info
     
-    print(nutritional_info)
+    nutritional_info = API_Calls.process_nutrition(nutrients)
     
     # Re-enable this when done testing
     recipe.nutritional_info = nutritional_info
     recipe.saveToDB()
     return {
         'status':'ok',
-        'message':'Got All Recipe Info',
+        'message':'Got Nutritional Info',
         'severity':'success',
         'data':nutritional_info
         }, 200
@@ -297,3 +264,83 @@ def get_nutritional_info(recipe_id):
     return recipe.nutritional_info
     
     return {"didnt find nutritional info":"didn't"}
+
+@user_recipe_blueprint.route('/getnutritionalinfospoonacular/<int:spoonacular_id>')
+def get_nutritional_info_spoonacular(spoonacular_id):
+    response = API_Calls.get_nutrition_spoonacular(spoonacular_id)
+    nutrients = response["nutrients"]
+    
+    nutritional_info = API_Calls.process_nutrition(nutrients)
+    
+    return {
+        'status':'ok',
+        'message':'Got Nutritional Info',
+        'severity':'success',
+        'data':nutritional_info
+        }, 200
+
+@user_recipe_blueprint.route('/getrandomrecipe')
+def get_random_recipe():
+    
+    # Keep for testing when don't want to run api a bunch
+    # with open("data_backups/random_recipe_test.json") as f:
+    #     results = json.loads(f.read())
+    # return results, 200
+    
+    recipe = API_Calls.get_random_recipe()
+
+    # Check to see if recipe already exists in database
+    existing_recipe = Recipes.query.filter_by(spoonacular_id=recipe["id"]).all()
+    if existing_recipe:
+        return {
+            "status":"ok",
+            "message":"recipe already in database",
+            "severity":"success",
+            "data":{"recipe_id":existing_recipe[0].id},
+        }, 200
+    
+    try: 
+        recipe_info = API_Calls.process_recipe_info_spoonacular(recipe)
+    except:
+        return {
+            "status":"not ok",
+            "message":"there was an issue, please try again",
+            "severity":"error",
+        }, 400
+    
+    
+    return {
+        "status":"ok",
+        "message":"sucessfully got new recipe",
+        "severity":"success",
+        "data":recipe_info,
+    }, 200
+
+@user_recipe_blueprint.route('/addspoonacularrecipetodb/<int:spoonacular_id>')
+def add_random_spoonacular_recipe_to_db(spoonacular_id):
+    spoonacular_recipe = API_Calls.get_recipe_info_spoonacular(spoonacular_id)
+    recipe_info = API_Calls.process_recipe_info_spoonacular(spoonacular_recipe)
+    # Giving all new recipes to Main ReciPlease Account
+    owner_id = 1
+
+    saved_recipe = Recipes(
+        owner_id,
+        recipe_info["title"],
+        recipe_info["instructions"],
+        recipe_info["ingredients"],
+        recipe_info["image_url"],
+        recipe_info["source_url"],
+        servings=recipe_info["servings"],
+        cook_time=recipe_info["cook_time"],
+        spoonacular_id=recipe_info["spoonacular_id"]
+    )
+    saved_recipe.saveToDB()
+    print("recipe id",saved_recipe.id)
+    return {
+        "status":"ok",
+        "message":"Successfully saved recipe",
+        "severity":"success",
+        "data":{"recipe_id":saved_recipe.id}
+    }
+
+    
