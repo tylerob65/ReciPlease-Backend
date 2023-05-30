@@ -261,6 +261,51 @@ def get_user_top_recipes(user_id,recipe_page):
         'data':data,
     }, 200
 
+@user_recipe_blueprint.route('/getuserlikedrecipes/<int:user_id>/<int:like_page>')
+def get_user_liked_recipes(user_id,like_page):
+    
+    stm = db.select(sql_func.count(RecipeLikes.id))
+    stm = stm.where(RecipeLikes.user_id==user_id)
+    total_liked_recipes = db.session.execute(stm).first()[0]
+
+    liked_recipes_per_page = 5
+    limit = 5
+    offset = (like_page - 1) * liked_recipes_per_page
+    max_page = ceil(total_liked_recipes/liked_recipes_per_page)
+
+    query = db.session.query(
+        RecipeLikes.recipe_id,
+        Recipes.title,
+        Recipes.owner_id,
+        Users.username,
+    )
+    query = query.where(RecipeLikes.user_id==user_id)
+    query = query.join(Recipes,Recipes.id==RecipeLikes.recipe_id)
+    query = query.join(Users,Users.id==Recipes.owner_id)
+    query = query.order_by(sql_desc(Recipes.date_added))
+    query = query.limit(limit).offset(offset)
+    results = query.all()
+    liked_recipe_list = []
+    for item in results:
+        liked_recipe_list.append({
+            "recipe_id":item[0],
+            "recipe_title":item[1],
+            "owner_id":item[2],
+            "owner_username":item[3],
+        })
+    
+    data = {
+        "like_page":like_page,
+        "max_pages":max_page,
+        "liked_recipe_list":liked_recipe_list,
+    }
+    return {
+        'status':'ok',
+        'message':'Got Liked Recipes',
+        'severity':'success',
+        'data':data,
+    }, 200
+
 @user_recipe_blueprint.route('/getnutritionalinfo/<int:recipe_id>')
 def get_nutritional_info(recipe_id):
     recipe = Recipes.query.get(recipe_id)

@@ -26,6 +26,43 @@ def backup_all_route():
     
     return {"success":"success"}
 
+@helpers.route("/test31")
+def test_find_user_liked_recipes():
+    user_id = 5
+    like_page = 1
+
+    user = Users.query.get(user_id)
+    print(user)
+    liked_recipes = user.liked_recipes
+    print(liked_recipes)
+
+    stm = db.select(sql_func.count(RecipeLikes.id))
+    stm = stm.where(RecipeLikes.user_id==user_id)
+    print(stm)
+    total_liked_recipes = db.session.execute(stm).first()[0]
+    print(total_liked_recipes)
+
+    liked_recipes_per_page = 5
+    limit = 5
+    offset = (like_page - 1) * liked_recipes_per_page
+    max_page = ceil(total_liked_recipes/liked_recipes_per_page)
+
+    query = db.session.query(
+        RecipeLikes.recipe_id,
+        Recipes.title,
+        Recipes.owner_id,
+        Users.username,
+    )
+    query = query.where(RecipeLikes.user_id==user_id)
+    query = query.join(Recipes,Recipes.id==RecipeLikes.recipe_id)
+    query = query.join(Users,Users.id==Recipes.owner_id)
+    query = query.order_by(sql_desc(Recipes.date_added))
+    query = query.limit(limit).offset(offset)
+    print(query)
+    results = query.all()
+    print(results)
+
+    return {"hi":"hi"}
 
 @helpers.route("/test30/<int:item1>/<int:item2>")
 def test_two_parameters_in_url(item1,item2):
@@ -38,7 +75,6 @@ def test_two_parameters_in_url(item1,item2):
 
 @helpers.route("/test29")
 def test_get_user_top_recipes():
-    # print(item1,item2)
     recipe_page = 1
     user_id = 6 
     total_recipes_stm = db.select(sql_func.count(Recipes.id))
@@ -80,6 +116,7 @@ def test_get_user_top_recipes():
         "recipe_list":recipe_list,
         "current_page":recipe_page,
     }
+    # TODO Return early if total_recipes == 0
     return {
         'status':'ok',
         'message':'Got Recipe Likes',
@@ -88,17 +125,11 @@ def test_get_user_top_recipes():
     }, 200
 
 
-
     
 
 
 
-    # TODO Return early if total_recipes == 0
 
-    
-
-
-    return {"hi":"hi"}
 
 
 # Reminder recipe id 23 has spoonacular id = 641907
