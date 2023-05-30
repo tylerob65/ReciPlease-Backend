@@ -432,3 +432,25 @@ def search_by_ingredients():
         "data":processed_results,
     }
 
+@user_recipe_blueprint.route('/getpublicuserinfo/<int:user_id>')
+def get_public_user_info(user_id):
+    try: 
+        user = Users.query.get(user_id)
+        username = user.username
+    except:
+        return {
+            "status":"not ok",
+            "message":"User does not exist",
+            "severity":"error",
+        }, 400
+    
+    user_info = {
+        "user_id":user_id,
+        "username":username,
+    }
+    return {
+        "status":"ok",
+        "message":"User info found",
+        "severity":"success",
+        "data":user_info,
+    }
