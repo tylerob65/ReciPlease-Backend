@@ -114,7 +114,51 @@ class API_Calls():
         }
         return recipe_info
 
+    def get_search_by_ingredients(ingredients_string,results_quantity):
+        url = base_url + "/recipes/findByIngredients"
+        querystring = {
+            "ingredients":ingredients_string,
+            "number":results_quantity,
+            "ignorePantry":"true",
+            "ranking":"1"}
+        response = requests.get(url, headers=headers_get, params=querystring)
+        return response.json()
+    
+    def process_seach_by_ingredients(recipe_list):
+        new_recipe_list = []
         
+        for recipe in recipe_list:
+            missed_ingredients = []
+            used_ingredients = []
+            unused_ingredients = []
+            
+            for ingredient in recipe["usedIngredients"]:
+                used_ingredients.append(ingredient["name"])
+            
+            for ingredient in recipe["missedIngredients"]:
+                missed_ingredients.append(ingredient["name"])
+
+            for ingredient in recipe["unusedIngredients"]:
+                unused_ingredients.append(ingredient["name"])
+            
+            recipe_dict = {
+                "id":recipe["id"],
+                "title":recipe["title"],
+                "image":recipe["image"],
+                "usedIngredients":used_ingredients,
+                "missedIngredients":missed_ingredients,
+                "unusedIngredients":unused_ingredients,
+            }
+            
+            new_recipe_list.append(recipe_dict)
+        
+        return new_recipe_list
+
+
+
+
+
+
 
         
         

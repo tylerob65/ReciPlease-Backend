@@ -343,4 +343,18 @@ def add_random_spoonacular_recipe_to_db(spoonacular_id):
         "data":{"recipe_id":saved_recipe.id}
     }
 
-    
+@user_recipe_blueprint.post('/searchbyingredients')
+def search_by_ingredients():
+    data = request.json
+    ingredients_string = data["search_ingredients"]
+    API_Calls.get_search_by_ingredients
+    recipe_quantity = 2
+    api_results = API_Calls.get_search_by_ingredients(ingredients_string,recipe_quantity)
+    processed_results = API_Calls.process_seach_by_ingredients(api_results)
+    return {
+        "status":"ok",
+        "message":"successfully searched recipes",
+        "severity":"success",
+        "data":processed_results,
+    }
+

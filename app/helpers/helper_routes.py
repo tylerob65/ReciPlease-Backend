@@ -26,7 +26,37 @@ def backup_all_route():
     return {"success":"success"}
 
 # Reminder recipe id 23 has spoonacular id = 641907
+@helpers.route("/test28")
+def test_reach_by_recipe_ingredients():
+    ingredients_list = "bananas, apples, oranges,mushrooms"
+    recipe_quantity = 2
+    api_results = API_Calls.get_search_by_ingredients(ingredients_list,recipe_quantity)
+    processed_results = API_Calls.process_seach_by_ingredients(api_results)
 
+    return_dict = {
+        "From API":api_results,
+        "Processed Results":processed_results,
+    }
+
+
+    return return_dict
+
+@helpers.route("/test27")
+def test_get_random_recipes():
+
+    
+    stm = db.select(Recipes.id,
+                    Recipes.title,
+                    Recipes.image_url,)
+    stm = stm.order_by(sql_func.random())
+    stm = stm.limit(5)
+
+    print(stm)
+    result = db.session.execute(stm).all()
+    print(result)
+
+    
+    return {"hi":"hi"}
 
 @helpers.route("/test26")
 def test_get_specific_recipe_instructions():
@@ -38,8 +68,6 @@ def test_get_specific_recipe_instructions():
             instructions.append(instruction["step"])
     return instructions
 
-
-
 @helpers.route("/test25")
 def test_get_specific_recipe_info_and_save():
     recipe = API_Calls.get_recipe_info_spoonacular(659782)
@@ -49,7 +77,6 @@ def test_get_specific_recipe_info_and_save():
         f.write(json_object)
 
     return recipe
-
 
 @helpers.route("/test24")
 def add_nutritional_info_to_db():
@@ -88,12 +115,6 @@ def test_get_spoonacular_nutrition():
             "percentOfDailyNeeds":nutrient["percentOfDailyNeeds"]
         }
     return new_dict
-
-
-    
-    
-    print(results)
-    return results
 
 @helpers.route("/test21")
 def test_get_recipe_anaysis():
