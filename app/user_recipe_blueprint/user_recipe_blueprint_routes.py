@@ -343,12 +343,43 @@ def add_random_spoonacular_recipe_to_db(spoonacular_id):
         "data":{"recipe_id":saved_recipe.id}
     }
 
+@user_recipe_blueprint.route('/getspoonacularrecipe/<int:spoonacular_id>')
+def get_spoonacular_recipe(spoonacular_id):
+    existing_recipe = Recipes.query.filter_by(spoonacular_id=spoonacular_id).all()
+    if existing_recipe:
+        return {
+            "status":"ok",
+            "message":"recipe already in database",
+            "severity":"success",
+            "data":{"recipe_id":existing_recipe[0].id},
+        }, 200
+    
+    try: 
+        recipe = API_Calls.get_recipe_info_spoonacular(spoonacular_id)
+        recipe_info = API_Calls.process_recipe_info_spoonacular(recipe)
+    except:
+        return {
+            "status":"not ok",
+            "message":"there was an issue, please try again",
+            "severity":"error",
+        }, 400
+    
+    return {
+        "status":"ok",
+        "message":"sucessfully got new recipe",
+        "severity":"success",
+        "data":recipe_info,
+    }, 200
+
+
+
+
 @user_recipe_blueprint.post('/searchbyingredients')
 def search_by_ingredients():
     data = request.json
     ingredients_string = data["search_ingredients"]
     API_Calls.get_search_by_ingredients
-    recipe_quantity = 2
+    recipe_quantity = 3
     api_results = API_Calls.get_search_by_ingredients(ingredients_string,recipe_quantity)
     processed_results = API_Calls.process_seach_by_ingredients(api_results)
     return {
