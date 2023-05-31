@@ -1,5 +1,4 @@
-from flask import request
-from ..models import Users
+from app.models import Users
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from werkzeug.security import check_password_hash
 
@@ -11,7 +10,6 @@ def verify_password(username,password):
     user = Users.query.filter_by(username=username).first()
     if user and check_password_hash(user.password,password):
         return user
-
 
 @token_auth.verify_token
 def verify_token(token):
@@ -29,7 +27,6 @@ def basic_auth_error(status):
 
 @token_auth.error_handler
 def token_auth_error(status):
-    print(request)
     return {
         'status': 'not ok',
         'message': "Invalid Credentials",

@@ -2,7 +2,7 @@ from app.auth.auth_routes import auth
 from app.user_recipe_blueprint.user_recipe_blueprint_routes import user_recipe_blueprint
 from app.helpers.helper_routes import helpers
 from app.likes_blueprint.likes_blueprint_routes import likes_blueprint
-from app.models import db, Users
+from app.models import db
 from flask import Flask
 from config import Config
 from flask_migrate import Migrate

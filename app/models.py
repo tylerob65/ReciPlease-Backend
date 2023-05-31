@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.dialects.postgresql import ARRAY
 from secrets import token_hex
+from sqlalchemy.dialects.postgresql import ARRAY
 from werkzeug.security import generate_password_hash
 
 db = SQLAlchemy()
@@ -21,7 +21,6 @@ class Users(db.Model):
     user_recipes = db.relationship("Recipes",foreign_keys='Recipes.owner_id',back_populates="owner")
     liked_recipes = db.relationship("Recipes",secondary="recipe_likes",lazy=True,back_populates="recipe_likers")
     
-
     def __init__(self, username, email, password, first_name, last_name):
         self.username = username
         self.email = email
@@ -45,6 +44,7 @@ class Users(db.Model):
             'email':self.email,
             'apitoken':self.apitoken,
         }
+    
     def complete_to_dict(self):
         return {
             'id':self.id,
@@ -141,7 +141,8 @@ class RecipeLikes(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False)
     recipe_id = db.Column(db.Integer,db.ForeignKey('recipes.id'), nullable=False)
-    # Item below is to make sure that person can't like recipe twice, seems to work
+    
+    # Item below is to make sure that person can't like recipe twice
     __table_args__ = (db.UniqueConstraint('user_id', 'recipe_id'), )
 
     def __init__(self,user_id,recipe_id):

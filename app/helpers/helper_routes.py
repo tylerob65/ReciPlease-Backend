@@ -1,24 +1,22 @@
-from app.models import Users, db, Recipes, RecipeLikes
-from app.auth.auth_helpers import basic_auth, token_auth
-from app.models import Recipes
 from app.api_helpers import API_Calls
-from flask import Blueprint, request
 from app.helpers.backup_database import backup_all
-import json
-import datetime
-import requests
-import os
+from app.models import Users, db, Recipes, RecipeLikes
+from flask import Blueprint
 from math import ceil
 from sqlalchemy import func as sql_func
 from sqlalchemy import desc as sql_desc
+import datetime
+import json
+import os
+import requests
 
+# This file was where I would test out routes our features that I eventually
+# would migrate into the real routes
 
 RAPID_API_KEY = os.environ.get('RAPID_API_KEY')
 RAPID_API_HOST = os.environ.get('RAPID_API_HOST')
 
 helpers = Blueprint('helpers',__name__)
-
-
 
 @helpers.route("/backupall")
 def backup_all_route():
@@ -124,14 +122,6 @@ def test_get_user_top_recipes():
         'data':data,
     }, 200
 
-
-    
-
-
-
-
-
-
 # Reminder recipe id 23 has spoonacular id = 641907
 @helpers.route("/test28")
 def test_reach_by_recipe_ingredients():
@@ -144,7 +134,6 @@ def test_reach_by_recipe_ingredients():
         "From API":api_results,
         "Processed Results":processed_results,
     }
-
 
     return return_dict
 
@@ -411,12 +400,8 @@ def test_analyze_recipe():
     # with open(f"data_backups/recipe_test "+time_string+".json","w") as f:
     #     f.write(json_object)
 
-    
-
-
-
     return results
-    # return {"hi":"hi"}
+
 
 @helpers.route("/test13")
 def test_sql_paginate3():
@@ -485,10 +470,6 @@ def test_sql_paginate2():
     sub = stm.subquery()
     print(sub)
     print(db.select(sub))
-    # stm = (
-    #     select(Users)
-        
-    # )
 
     print(sub)
     # new_stm = db.select(Recipes.id,Recipes.title,Recipes.owner_id).label("subq")
@@ -501,22 +482,8 @@ def test_sql_paginate2():
     # Recipes_by_like = db.session.execute(stm)
     # print(Recipes_by_like.all())
 
-    """
-    SELECT RECIPES
-    JOIN SUBQUERY ON ()
-    
-    
-    """
-
     # stm = db.select(Recipes.id,Recipes.title,Recipes.owner_id)
     # print(stm)
-
-
-    
-
-
-
-
 
     return {"hi":"hi"}
 

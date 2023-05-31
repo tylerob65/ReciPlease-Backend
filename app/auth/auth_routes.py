@@ -1,5 +1,5 @@
-from app.models import Users, db
-from app.auth.auth_helpers import basic_auth, token_auth
+from app.auth.auth_helpers import basic_auth
+from app.models import Users
 from flask import Blueprint, request
 
 auth = Blueprint('auth',__name__)

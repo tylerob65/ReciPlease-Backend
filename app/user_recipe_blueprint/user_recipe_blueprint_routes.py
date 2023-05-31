@@ -1,11 +1,10 @@
-from app.models import Recipes, Users, db, RecipeLikes
-from app.auth.auth_helpers import basic_auth, token_auth
 from app.api_helpers import API_Calls
+from app.auth.auth_helpers import token_auth
+from app.models import db, Recipes, RecipeLikes, Users
 from flask import Blueprint, request
-from sqlalchemy import func as sql_func
 from math import ceil
 from sqlalchemy import desc as sql_desc
-import json
+from sqlalchemy import func as sql_func
 
 user_recipe_blueprint = Blueprint('user_recipe_blueprint',__name__)
 
@@ -36,8 +35,6 @@ def add_recipe():
 @user_recipe_blueprint.route('/viewrecipe/<int:recipe_id>')
 def get_recipe_for_view(recipe_id):
     recipe = Recipes.query.get(recipe_id)
-    print(recipe)
-    print(recipe.to_dict())
 
     if not recipe:
         return {
@@ -65,7 +62,6 @@ def get_recipe_for_modify(recipe_id):
             "severity":"error",
         }, 400
 
-
     if token_auth.current_user().id != recipe.owner_id:
         return {
             "status":"not ok",
@@ -85,15 +81,13 @@ def get_recipe_for_modify(recipe_id):
 def modify_recipe():
     data = request.json
     recipe = Recipes.query.get(data['recipeID'])
+
     if not recipe:
         return {
             "status":"not ok",
             "message":"This recipe does not exist",
             "severity":"error",
         }, 400
-    
-    print(token_auth.current_user().id)
-    print("recipe owner id",recipe.owner_id)
 
     if token_auth.current_user().id != recipe.owner_id:
         return {
@@ -120,20 +114,14 @@ def modify_recipe():
     
 @user_recipe_blueprint.route('/getallrecipes')
 def get_all_recipes():
-    # recipe_list = Recipes.query.all()
-    # db.session
-    # recipe_dict
     all_recipes_query = db.select(Recipes).order_by(Recipes.id)
     all_recipes = db.session.execute(all_recipes_query).all()
-    # recipe_dict = {}
-    # for recipe in all_recipes:
-    #     recipe_as_dict = recipe[0].shallow_to_dict(show_owner_username=True)
-    #     recipe_num = recipe_as_dict['id']
-    #     recipe_dict[recipe_num] = recipe_as_dict
+    
     recipe_list = []
     for recipe in all_recipes:
         recipe_as_dict = recipe[0].shallow_to_dict(show_owner_username=True)
         recipe_list.append(recipe_as_dict)
+    
     return {
         'status':'ok',
         'message':'Got All Recipe Info',
@@ -161,9 +149,7 @@ def get_user_recipes():
 
 @user_recipe_blueprint.route('/gettoprecipes/<int:recipe_page>')
 def get_top_recipes(recipe_page):
-    
     total_recipes_stm = db.select(sql_func.count(Recipes.id))
-    
     total_recipes = db.session.execute(total_recipes_stm).first()[0]
     recipes_per_page = 5
     limit = 5
@@ -206,15 +192,6 @@ def get_top_recipes(recipe_page):
         'severity':'success',
         'data':data,
     }, 200
-    
-    print(total_recipes_stm)
-    print(total_recipes)
-    # # CODE BELOW COUNTS THE AMOUNT OF RECIPES
-    # stm = db.select(sql_func.count(Recipes.id))
-    # print(stm)
-    # outcome = db.session.execute(stm).first()[0]
-
-    return {"total_pages":total_recipes}
 
 @user_recipe_blueprint.route('/getusertoprecipes/<int:user_id>/<int:recipe_page>')
 def get_user_top_recipes(user_id,recipe_page):
@@ -230,8 +207,6 @@ def get_user_top_recipes(user_id,recipe_page):
     query = db.session.query(
         Recipes.id,
         Recipes.title,
-        # Users.username,
-        # Recipes.owner_id,
         sql_func.count(RecipeLikes.recipe_id).label('like_count'))
     query = query.where(Users.id==user_id)
     query = query.join(Users, Recipes.owner_id == Users.id)
@@ -309,6 +284,7 @@ def get_user_liked_recipes(user_id,like_page):
 @user_recipe_blueprint.route('/getnutritionalinfo/<int:recipe_id>')
 def get_nutritional_info(recipe_id):
     recipe = Recipes.query.get(recipe_id)
+    
     # Check if already have nutritional_info and send over if I do
     if recipe.nutritional_info:
         return {
@@ -342,18 +318,6 @@ def get_nutritional_info(recipe_id):
         'severity':'success',
         'data':nutritional_info
         }, 200
-
-    
-    
-    
-    
-
-
-
-        
-    return recipe.nutritional_info
-    
-    return {"didnt find nutritional info":"didn't"}
 
 @user_recipe_blueprint.route('/getnutritionalinfospoonacular/<int:spoonacular_id>')
 def get_nutritional_info_spoonacular(spoonacular_id):
@@ -425,7 +389,6 @@ def add_random_spoonacular_recipe_to_db(spoonacular_id):
         spoonacular_id=recipe_info["spoonacular_id"]
     )
     saved_recipe.saveToDB()
-    print("recipe id",saved_recipe.id)
     return {
         "status":"ok",
         "message":"Successfully saved recipe",
@@ -460,7 +423,6 @@ def get_spoonacular_recipe(spoonacular_id):
         "severity":"success",
         "data":recipe_info,
     }, 200
-
 
 @user_recipe_blueprint.post('/searchbyingredients')
 def search_by_ingredients():
@@ -508,7 +470,6 @@ def get_random_homepage_recipes():
     stm = stm.order_by(sql_func.random())
     stm = stm.limit(5)
 
-    print(stm)
     result = db.session.execute(stm).all()
 
     recipe_list = []
@@ -525,7 +486,3 @@ def get_random_homepage_recipes():
         "severity":"success",
         "data":recipe_list,
     }, 200
-
-
-    
-    return

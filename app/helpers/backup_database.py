@@ -1,6 +1,6 @@
-from app.models import Users, db, Recipes, RecipeLikes
-import json
+from app.models import Recipes, RecipeLikes, Users
 import datetime
+import json
 
 def backup_all():
     def start_backup_wrapper(func,name):
