@@ -499,3 +499,33 @@ def get_public_user_info(user_id):
         "severity":"success",
         "data":user_info,
     }
+
+@user_recipe_blueprint.route('/getrandomhomepagerecipes')
+def get_random_homepage_recipes():
+    stm = db.select(Recipes.id,
+                    Recipes.title,
+                    Recipes.image_url,)
+    stm = stm.order_by(sql_func.random())
+    stm = stm.limit(5)
+
+    print(stm)
+    result = db.session.execute(stm).all()
+
+    recipe_list = []
+    for recipe in result:
+        recipe_list.append({
+            "recipe_id":recipe[0],
+            "recipe_title":recipe[1],
+            "image_url":recipe[2],
+        })
+    
+    return {
+        "status":"ok",
+        "message":"successfully got 5 random recipes from db",
+        "severity":"success",
+        "data":recipe_list,
+    }, 200
+
+
+    
+    return
