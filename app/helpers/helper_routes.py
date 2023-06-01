@@ -24,6 +24,42 @@ def backup_all_route():
     
     return {"success":"success"}
 
+@helpers.route("/test34")
+def users_by_most_recipes():
+    # Get count of users
+
+    # This works
+    # stm = db.select(sql_func.count(Users.id))
+    # total_users = db.session.execute(stm).first()[0]
+    # print(total_users)
+
+    query = db.session.query(
+        Users.id,
+        Users.username,
+        sql_func.count(Recipes.id).label("user_recipes"))
+    query = query.outerjoin(Recipes, Recipes.owner_id == Users.id)
+    query = query.group_by(Users.id)
+    query = query.order_by(sql_desc("user_recipes"),Users.date_joined)
+    results = query.all()
+    print(results)
+
+    return {"results":"hi"}
+
+@helpers.route("/test33")
+def test_play_with_sqlalchemy_class():
+    user = Users.query.get(3)
+    print(user)
+    print(user.__dict__)
+    for key,val in user.__dict__.items():
+        print("Key:",key,"   ","Value:",val)
+    return {"hi":"hi"}
+
+@helpers.route("/test32")
+def test_delete_a_recipe():
+    recipe = Recipes.query.get(43)
+    recipe.deleteFromDB()
+    return recipe.to_dict()
+
 @helpers.route("/test31")
 def test_find_user_liked_recipes():
     user_id = 5

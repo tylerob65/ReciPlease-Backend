@@ -236,6 +236,48 @@ def get_user_top_recipes(user_id,recipe_page):
         'data':data,
     }, 200
 
+@user_recipe_blueprint.route('/getusersbyrecipecount/<int:user_recipe_page>')
+def get_users_by_recipe_count(user_recipe_page):
+    stm = db.select(sql_func.count(Users.id))
+    total_users = db.session.execute(stm).first()[0]
+
+    users_per_page = 5
+    limit = 5
+    offset = (user_recipe_page - 1) * users_per_page
+    max_page = ceil(total_users/users_per_page)
+
+    query = db.session.query(
+        Users.id,
+        Users.username,
+        sql_func.count(Recipes.id).label("user_recipes"))
+    query = query.outerjoin(Recipes, Recipes.owner_id == Users.id)
+    query = query.group_by(Users.id)
+    query = query.order_by(sql_desc("user_recipes"),Users.date_joined)
+    query = query.limit(limit).offset(offset)
+    results = query.all()
+
+    user_list = []
+    for user in results:
+        user_list.append({
+            "user_id":user[0],
+            "username":user[1],
+            "recipe_count":user[2],
+        })
+    
+    data = {
+        'user_recipe_page':user_recipe_page,
+        'max_pages':max_page,
+        'user_list':user_list,
+    }
+    
+    return {
+        'status':'ok',
+        'message':'Got User List',
+        'severity':'success',
+        'data':data,
+    }, 200
+
+
 @user_recipe_blueprint.route('/getuserlikedrecipes/<int:user_id>/<int:like_page>')
 def get_user_liked_recipes(user_id,like_page):
     
